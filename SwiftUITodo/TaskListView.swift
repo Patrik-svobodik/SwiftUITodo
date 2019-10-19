@@ -13,21 +13,31 @@ struct TaskListView: View {
     @State var draftTitle: String = ""
     @State var isEditing: Bool = false
     
-    var body: some View {
-        List {
-            TextField("Create a New Task...", text: $draftTitle, onCommit: self.createTask)
-            ForEach(self.userData.tasks) { task in
-                TaskItemView(task: task, isEditing: self.$isEditing)
-            }
+    private func delete(at index: IndexSet) {
+        guard let firstIndex = index.first else { return }
+        self.userData.tasks.remove(at: firstIndex)
+        if self.userData.tasks.isEmpty {
+            self.isEditing = false
         }
-        .navigationBarTitle(Text("Tasks 👀"))
-        .navigationBarItems(trailing: Button(action: { self.isEditing.toggle() }) {
-            if !self.isEditing {
-                Text("Edit")
-            } else {
-                Text("Done").bold()
+    }
+    
+    var body: some View {
+        NavigationView {
+            List {
+                TextField("Create a New Task...", text: $draftTitle, onCommit: self.createTask)
+                ForEach(self.userData.tasks) { task in
+                    TaskItemView(task: task, isEditing: self.$isEditing)
+                }.onDelete(perform: self.delete)
             }
-        })
+            .navigationBarTitle(Text("Tasks 👀"))
+            .navigationBarItems(trailing: Button(action: { self.isEditing.toggle() }) {
+                if !self.isEditing {
+                    Text("Edit")
+                } else {
+                    Text("Done").bold()
+                }
+            })
+        }
     }
     
     private func createTask() {
